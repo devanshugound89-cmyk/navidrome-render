@@ -1,19 +1,13 @@
 #!/bin/sh
 set -e
 
-mkdir -p /root/.config/rclone /music /data
+mkdir -p /root/.config/rclone
 printf "%s\n" "$RCLONE_CONF" > /root/.config/rclone/rclone.conf
 
-rclone mount Gdrive:Music /music \
+exec rclone serve webdav Gdrive:Music \
+  --addr 0.0.0.0:${PORT:-10000} \
+  --user "${WEBDAV_USER:-admin}" \
+  --pass "${WEBDAV_PASS:-changeme123}" \
   --read-only \
   --vfs-cache-mode minimal \
-  --vfs-cache-max-age 30m \
-  --buffer-size 16M \
-  --daemon
-
-export ND_PORT=${PORT:-10000}
-export ND_MUSICFOLDER=/music
-export ND_DATAFOLDER=/data
-export ND_SCANNER_SCHEDULE="@every 6h"
-
-exec /app/navidrome
+  --buffer-size 16M
